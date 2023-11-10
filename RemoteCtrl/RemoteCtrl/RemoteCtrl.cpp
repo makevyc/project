@@ -45,7 +45,7 @@ int main()
             {
                 if (pserver->AcceptClient() == false)
                 {
-                    if (count > 3)
+                    if (count >= 3)
                     {
                         MessageBox(NULL, _T(""), _T(""), MB_OK | MB_ICONERROR);
                         exit(0);
