@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "framework.h"
 #include "RemoteCtrl.h"
-
+#include "ServerSocket.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -19,7 +19,7 @@ using namespace std;
 int main()
 {
     int nRetCode = 0;
-
+    
     HMODULE hModule = ::GetModuleHandle(nullptr);
 
     if (hModule != nullptr)
@@ -33,7 +33,31 @@ int main()
         }
         else
         {
-            // TODO: 在此处为应用程序的行为编写代码。
+            //1.套接字环境初始化
+            CServerSocket*pserver =  CServerSocket::getInstance();
+            int count = 0;          
+            if (pserver->InitSocket() == false)
+            {
+                MessageBox(NULL, _T("网络初始化失败,请检查网络状态"), _T("初始化失败"), MB_OK | MB_ICONERROR);
+                exit(0);
+            }
+            while (CServerSocket::getInstance()!=NULL)
+            {
+                if (pserver->AcceptClient() == false)
+                {
+                    if (count > 3)
+                    {
+                        MessageBox(NULL, _T(""), _T(""), MB_OK | MB_ICONERROR);
+                        exit(0);
+                    }
+                    MessageBox(NULL, _T("无法接入，正在重试"), _T("无法接入"), MB_OK | MB_ICONERROR);
+                    count++;
+                }
+                int ret = pserver->DealCommand();
+                //TODO:
+            }
+
+
         }
     }
     else

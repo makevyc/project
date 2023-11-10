@@ -1,6 +1,7 @@
 ﻿
 // RemoteClient.cpp: 定义应用程序的类行为。
 //
+#pragma once
 
 #include "pch.h"
 #include "framework.h"
