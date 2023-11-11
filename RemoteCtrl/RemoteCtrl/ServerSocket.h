@@ -17,7 +17,7 @@ public:
 		sHead = 0xFEFF;
 		nLength = nSize + 4;
 		sCmd = nCmd;
-		if (nSize == 0)
+		if (nSize > 0)
 		{
 			strData.resize(nSize);
 			memcpy((void*)strData.c_str(), pData, nSize);
@@ -27,7 +27,7 @@ public:
 			strData.clear();
 		}
 		sSum = 0;
-		for (size_t j = 0;j<nSize;j++)
+		for (size_t j = 0;j<strData.size();j++)
 		{
 			sSum += BYTE(strData[j]) & 0xFF;
 		}
@@ -225,7 +225,7 @@ public:
 
 	bool Send(const char* pData, size_t nSize)
 	{
-
+		if (m_client == -1)return false;
 		return send(m_client, pData, nSize, 0) > 0;
 	}
 	bool Send( CPacket& pack)
