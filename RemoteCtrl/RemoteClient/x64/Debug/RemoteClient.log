@@ -1,5 +1,10 @@
 ﻿  pch.cpp
+  ClientSocket.cpp
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\ClientSocket.h(20,19): warning C4267: “=”: 从“size_t”转换到“DWORD”，可能丢失数据
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\ClientSocket.h(120,19): warning C4244: “=”: 从“DWORD”转换到“WORD”，可能丢失数据
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\ClientSocket.h(214,60): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\ClientSocket.h(235,32): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
   RemoteClient.cpp
   RemoteClientDlg.cpp
   正在生成代码...
-D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\RemoteClient.cpp : fatal  error C1090: PDB API 调用失败，错误代码“3”: D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\x64\Debug\vc143.pdb
+  RemoteClient.vcxproj -> D:\Remote_Contrl\remote-control-system\RemoteCtrl\x64\Debug\RemoteClient.exe
