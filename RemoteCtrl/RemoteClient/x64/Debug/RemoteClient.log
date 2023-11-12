@@ -2,4 +2,4 @@
   RemoteClient.cpp
   RemoteClientDlg.cpp
   正在生成代码...
-  RemoteClient.vcxproj -> D:\Remote_Contrl\remote-control-system\RemoteCtrl\x64\Debug\RemoteClient.exe
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\RemoteClient.cpp : fatal  error C1090: PDB API 调用失败，错误代码“3”: D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteClient\x64\Debug\vc143.pdb

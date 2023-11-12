@@ -168,38 +168,6 @@ int DownloadFile()
     return 0;
 }
 
-int SendScreen()
-{
-    CImage screen;
-    HDC hScreen = ::GetDC(NULL); //拿到屏幕的句柄
-    int nBitPerPixel = GetDeviceCaps(hScreen, BITSPIXEL);
-    int nWidth = GetDeviceCaps(hScreen, HORZRES);
-    int nHeight = GetDeviceCaps(hScreen, VERTRES);
-    screen.Create(nWidth, nHeight, nBitPerPixel);
-    BitBlt(screen.GetDC(), 0, 0, 1920, 1020, hScreen, 0, 0, SRCCOPY);
-    ReleaseDC(NULL, hScreen);
-    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, 0);
-    if (hMem == NULL)return -1;
-    IStream* pStream = NULL;
-    HRESULT ret =  CreateStreamOnHGlobal(hMem, TRUE, &pStream);
-    if (ret == S_OK)
-    {
-        screen.Save(pStream, Gdiplus::ImageFormatPNG); //流保存的是PNG的数据
-        LARGE_INTEGER bg = { 0 };
-        pStream->Seek(bg, STREAM_SEEK_SET, NULL);
-        PBYTE pData = (PBYTE)GlobalLock(hMem);
-        SIZE_T nSize = GlobalSize(hMem);
-        CPacket pack(6, NULL, nSize);
-        CServerSocket::getInstance()->Send(pack);
-        GlobalUnlock(hMem);
-    }
-    //screen.Save(_T("test2020.png"), Gdiplus::ImageFormatPNG); //save重载一个是保存到文件上，一个是流上
-    //screen.Save(_T("test2020.jpg"), Gdiplus::ImageFormatJPEG);
-    pStream->Release();
-    GlobalFree(hMem);
-    screen.ReleaseDC();
-    return 0;
-}
 
 int MouseEvent()
 {
@@ -290,7 +258,7 @@ int MouseEvent()
         CPacket pack(4, NULL, 0);
         CServerSocket::getInstance()->Send(pack);//表明已经完成
 
-  
+
     }
     else
     {
@@ -300,6 +268,109 @@ int MouseEvent()
 
     return 0;
 }
+
+int SendScreen()
+{
+    CImage screen;
+    HDC hScreen = ::GetDC(NULL); //拿到屏幕的句柄
+    int nBitPerPixel = GetDeviceCaps(hScreen, BITSPIXEL);
+    int nWidth = GetDeviceCaps(hScreen, HORZRES);
+    int nHeight = GetDeviceCaps(hScreen, VERTRES);
+    screen.Create(nWidth, nHeight, nBitPerPixel);
+    BitBlt(screen.GetDC(), 0, 0, 1920, 1020, hScreen, 0, 0, SRCCOPY);
+    ReleaseDC(NULL, hScreen);
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, 0);
+    if (hMem == NULL)return -1;
+    IStream* pStream = NULL;
+    HRESULT ret =  CreateStreamOnHGlobal(hMem, TRUE, &pStream);
+    if (ret == S_OK)
+    {
+        screen.Save(pStream, Gdiplus::ImageFormatPNG); //流保存的是PNG的数据
+        LARGE_INTEGER bg = { 0 };
+        pStream->Seek(bg, STREAM_SEEK_SET, NULL);
+        PBYTE pData = (PBYTE)GlobalLock(hMem);
+        SIZE_T nSize = GlobalSize(hMem);
+        CPacket pack(6, pData, nSize);
+        CServerSocket::getInstance()->Send(pack);
+        GlobalUnlock(hMem);
+    }
+    //screen.Save(_T("test2020.png"), Gdiplus::ImageFormatPNG); //save重载一个是保存到文件上，一个是流上
+    //screen.Save(_T("test2020.jpg"), Gdiplus::ImageFormatJPEG);
+    pStream->Release();
+    GlobalFree(hMem);
+    screen.ReleaseDC();
+    return 0;
+}
+
+#include "LockDialog.h"
+CLockDialog dlg;
+unsigned threadId = 0;
+unsigned _stdcall threadLockDlg(void* ary)
+{
+    dlg.Create(IDD_DIALOG_INFO, NULL);
+    dlg.ShowWindow(SW_SHOW);
+    CRect rect;
+    rect.right = GetSystemMetrics(SM_CXFULLSCREEN);//得到满屏的像素
+    rect.left = 0;
+    rect.top = 0;
+    rect.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
+    TRACE("rect.bottom : %d", rect.bottom);
+    rect.bottom += 89;
+    dlg.MoveWindow(rect);
+    //窗口置顶
+    dlg.SetWindowPos(&dlg.wndTopMost, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    //隐藏鼠标
+    //ShowCursor(false);
+    //隐藏任务栏
+    ::ShowWindow(::FindWindow(_T("Shell_Traywnd"), NULL), SW_HIDE);
+    rect.right = 0;
+    rect.left = 0;
+    rect.top = 0;
+    rect.bottom = 0;
+    ClipCursor(rect);    //限制鼠标的移动，将光标限制在屏幕上的矩形区域
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        if (msg.message == WM_KEYDOWN)
+        {
+            TRACE("msg:%08X wparam:%08X lparam:%08X\r\n", msg.message, msg.wParam, msg.lParam);
+            if (msg.wParam == 0x41) //按下esc退出
+            {
+                break;
+            }
+        }
+    }
+    ShowCursor(true);
+    ::ShowWindow(::FindWindow(_T("Shell_TrayWnd"), NULL), SW_SHOW);
+    dlg.DestroyWindow();
+    _endthread();
+    return 0;
+}
+int LockMachine()
+{
+    if (dlg.m_hWnd == NULL || dlg.m_hWnd == INVALID_HANDLE_VALUE) //还没创建，就创建一个线程
+    {
+        //_beginthread(threadLockDlg, 0, NULL);
+        _beginthreadex(NULL, 0, threadLockDlg, NULL, 0, &threadId);
+        TRACE("threadId = %d\r\n", threadId);
+
+    }
+    CPacket pack(7, NULL, 0);
+    CServerSocket::getInstance()->Send(pack);
+    return 0;
+}
+
+int UnlockMachine()
+{
+   // dlg.SendMessage(WM_KEYDOWN, 0x41, 0x01E0001);
+    PostThreadMessage(threadId, WM_KEYDOWN, 0x41, 0);
+    CPacket pack(7, NULL, 0);
+    CServerSocket::getInstance()->Send(pack);
+    return 0;
+}
+
 int main()
 {
     int nRetCode = 0;
@@ -340,7 +411,7 @@ int main()
             //    int ret = pserver->DealCommand();
             //    //TODO:
             //}
-            int nCmd = 6; //命令
+            int nCmd = 7; //命令
             switch (nCmd)
             {
             case 1: //查看磁盘分区
@@ -361,9 +432,22 @@ int main()
             case 6://发送屏幕内容
                 SendScreen();
                 break;
-
+            case 7:
+                LockMachine(); //锁机
+                //Sleep(50);
+                //LockMachine(); //锁机
+                break;
+            case 8:
+                UnlockMachine();//解锁
+                break;
 
             }
+            Sleep(5000);
+            UnlockMachine();//解锁
+            while ((dlg.m_hWnd != NULL) && (dlg.m_hWnd != INVALID_HANDLE_VALUE));//一直等到为空
+           // Sleep(100);
+            TRACE("m_hWind:%d\r\n", dlg.m_hWnd);
+            while ((dlg.m_hWnd != NULL) && (dlg.m_hWnd != INVALID_HANDLE_VALUE));//一直等到为空
 
         }
     }
