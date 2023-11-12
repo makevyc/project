@@ -2,6 +2,7 @@
 #include<string>
 #include "pch.h"
 #include "framework.h"
+#include <vector>
 
 #pragma pack(push)
 #pragma pack(1)
@@ -151,20 +152,8 @@ typedef struct MouseEvent
 }MOUSEEV, * PMOUSEEV;
 
 
-std::string GetErrorInfo(int wsaErrCode)
-{
-	std::string ret;
-	LPVOID lpMsgBuf=NULL;
-	FormatMessage(
-		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-		NULL,
-		wsaErrCode,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf, 0, NULL);
-	ret = (char*)lpMsgBuf;
-	LocalFree(lpMsgBuf);	
-	return ret;
-}
+std::string GetErrInfo(int wsaErrCode);
+
 class CClientSocket
 {
 
@@ -179,6 +168,8 @@ public:
 	}
 	bool InitSocket(const std::string &strIpAddress)
 	{
+		if (m_socket != INVALID_SOCKET) closeSocket();
+		m_socket = socket(PF_INET, SOCK_STREAM, 0);
 		if (m_socket == -1)return false;
 		sockaddr_in serv_adr;
 		memset(&serv_adr, 0, sizeof(serv_adr));
@@ -194,7 +185,7 @@ public:
 		if (ret == -1)
 		{
 			AfxMessageBox("连接失败");
-			TRACE("连接失败，%d %s\r\n", WSAGetLastError(), GetErrorInfo(WSAGetLastError()).c_str());
+			TRACE("连接失败，%d %s\r\n", WSAGetLastError(), GetErrInfo(WSAGetLastError()).c_str());
 			return false;
 		}
 		return true;
@@ -204,15 +195,15 @@ public:
 #define BUFFER_SIZE 4096
 	int DealCommand() //处理消息/命令
 	{
-		if (m_socket == -1) return false;
-		char* buffer = new char[BUFFER_SIZE];
+		if (m_socket == -1) return -1;
+		char* buffer = m_buffer.data();
 		memset(buffer, 0, BUFFER_SIZE);
 		size_t index = 0;
 		while (true)
 		{
 			size_t len = recv(m_socket, buffer + index, BUFFER_SIZE - index, 0);
 			if (len < 0)
-			{
+			{ 
 				return -1;
 			}
 			index += len;
@@ -235,6 +226,7 @@ public:
 	}
 	bool Send(CPacket& pack)
 	{
+		TRACE("m_socket = %d\r\n", m_socket);
 		if (m_socket == -1)return false;
 		return send(m_socket, pack.Data(), pack.Size(), 0) > 0;
 	}
@@ -257,7 +249,19 @@ public:
 		return false;
 	}
 
+	CPacket& GetPacket()
+	{
+		return m_packet;
+	}
+
+	void closeSocket()
+	{
+		closesocket(m_socket);
+		m_socket = INVALID_SOCKET;
+
+	}
 private:
+	std::vector<char>  m_buffer;
 	SOCKET m_socket;
 	CPacket m_packet;
 	CClientSocket& operator=(const CClientSocket& ss)
@@ -277,8 +281,7 @@ private:
 			MessageBox(NULL, _T("无法初始化套接字环境，检查网络设置"), _T("初始化错误"), MB_OK | MB_ICONERROR);
 			exit(0);
 		}
-		m_socket = socket(PF_INET, SOCK_STREAM, 0);
-
+		m_buffer.resize(BUFFER_SIZE);
 	}
 	~CClientSocket()
 	{
