@@ -3,3 +3,5 @@
 /RemoteCtrl/x64
 /RemoteCtrl/RemoteCtrl/x64
 /RemoteCtrl/RemoteClient/x64
+/RemoteCtrl/RemoteClient/RemoteClient.vcxproj
+/RemoteCtrl/RemoteClient/RemoteClient.vcxproj.filters
