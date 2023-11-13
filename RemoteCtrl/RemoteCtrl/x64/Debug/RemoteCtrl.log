@@ -4,10 +4,4 @@ D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(118,
 D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(215,60): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
 D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(240,32): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
 D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\RemoteCtrl.cpp(101,28): warning C4244: “=”: 从“intptr_t”转换到“int”，可能丢失数据
-  ServerSocket.cpp
-D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(18,19): warning C4267: “=”: 从“size_t”转换到“DWORD”，可能丢失数据
-D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(118,19): warning C4244: “=”: 从“DWORD”转换到“WORD”，可能丢失数据
-D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(215,60): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
-D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(240,32): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
-  正在生成代码...
   RemoteCtrl.vcxproj -> D:\Remote_Contrl\remote-control-system\RemoteCtrl\x64\Debug\RemoteCtrl.exe

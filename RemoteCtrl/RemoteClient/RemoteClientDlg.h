@@ -19,7 +19,25 @@ public:
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
-
+private:
+	int SendCommandPacket(int nCmd,BYTE* pData=NULL,size_t nLength = 0)
+	{
+		UpdateData();
+		CClientSocket* pClient = CClientSocket::getInstance();
+		bool ret = pClient->InitSocket(m_server_address, atoi((LPCTSTR)m_nPort));
+		if (!ret)
+		{
+			AfxMessageBox("网络初始化失败！");
+			return -1 ;
+		}
+		CPacket pack(nCmd, pData, nLength);
+		ret = pClient->Send(pack);
+		TRACE("Send ret %d \r\n", ret);
+		int cmd = pClient->DealCommand();
+		TRACE("ack:%d\r\n", cmd);
+		pClient->closeSocket();
+		return cmd;
+	}
 
 // 实现
 protected:
@@ -33,4 +51,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedBinTest();
+	DWORD m_server_address;
+	CString m_nPort;
+	afx_msg void OnBnClickedBtnFileinfo();
+	CTreeCtrl m_Tree;
 };
