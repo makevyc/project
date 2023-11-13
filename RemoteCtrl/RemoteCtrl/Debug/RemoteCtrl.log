@@ -1,0 +1,8 @@
+﻿  pch.cpp
+  LockDialog.cpp
+  RemoteCtrl.cpp
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(118,19): warning C4244: “=”: 从“DWORD”转换到“WORD”，可能丢失数据
+  ServerSocket.cpp
+D:\Remote_Contrl\remote-control-system\RemoteCtrl\RemoteCtrl\ServerSocket.h(118,19): warning C4244: “=”: 从“DWORD”转换到“WORD”，可能丢失数据
+  正在生成代码...
+  RemoteCtrl.vcxproj -> D:\Remote_Contrl\remote-control-system\RemoteCtrl\Debug\RemoteCtrl.exe

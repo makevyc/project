@@ -20,24 +20,16 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 private:
-	int SendCommandPacket(int nCmd,BYTE* pData=NULL,size_t nLength = 0)
-	{
-		UpdateData();
-		CClientSocket* pClient = CClientSocket::getInstance();
-		bool ret = pClient->InitSocket(m_server_address, atoi((LPCTSTR)m_nPort));
-		if (!ret)
-		{
-			AfxMessageBox("网络初始化失败！");
-			return -1 ;
-		}
-		CPacket pack(nCmd, pData, nLength);
-		ret = pClient->Send(pack);
-		TRACE("Send ret %d \r\n", ret);
-		int cmd = pClient->DealCommand();
-		TRACE("ack:%d\r\n", cmd);
-		pClient->closeSocket();
-		return cmd;
-	}
+	CString GetPath(HTREEITEM hTree);
+	void DeleteTreeChildrenItem(HTREEITEM hTree);
+	//1.查看磁盘分区
+	//2.查看指定目录
+	//3.打开文件
+	//4.下载文件
+	//返回值是一个命令,小于0表示错误
+	int SendCommandPacket(int nCmd,bool bAutoClose = true , BYTE* pData = NULL, size_t nLength = 0);
+	
+
 
 // 实现
 protected:
@@ -55,4 +47,5 @@ public:
 	CString m_nPort;
 	afx_msg void OnBnClickedBtnFileinfo();
 	CTreeCtrl m_Tree;
+	afx_msg void OnNMDblclkTreeDir(NMHDR* pNMHDR, LRESULT* pResult);
 };

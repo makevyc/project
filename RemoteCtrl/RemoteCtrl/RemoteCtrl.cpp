@@ -45,6 +45,9 @@ int MakeDriverInfo() //1->A 2->B  3-> C 4->D  1-26 ->Z  盘 就26个分区
     {
         if (_chdrive(i) == 0)
         {
+            TRACE("--------\r\n");
+            TRACE("当前盘符：%d\r\n", i);
+            TRACE("--------\r\n");
             if (result.size() > 0)
             {
                 result += ',';
@@ -59,20 +62,6 @@ int MakeDriverInfo() //1->A 2->B  3-> C 4->D  1-26 ->Z  盘 就26个分区
 
 }
 
-typedef struct file_info
-{
-    file_info()
-    {
-        IsInvalid = FALSE;
-        IsDirectory = -1;
-        HasNext = TRUE;
-        memset(szFileName, 0, sizeof(szFileName));
-    }
-    BOOL IsInvalid;//是否有效
-    BOOL IsDirectory;//是否目录为0 否  1 -是
-    BOOL HasNext;
-    char szFileName[256];
-}FILEINFO, * PFILEINFO;
 
 int MakeDirectoryInfo()
 {
@@ -86,21 +75,21 @@ int MakeDirectoryInfo()
     if (_chdir(strPath.c_str()) != 0)
     {
         FILEINFO finfo;
-        finfo.IsInvalid = TRUE;
-        finfo.IsDirectory = TRUE;
         finfo.HasNext = FALSE;
-        memcpy(finfo.szFileName, strPath.c_str(), strPath.size());
-        //lstFileInfos.push_back(finfo);
         CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
         CServerSocket::getInstance()->Send(pack);
         OutputDebugString(_T("没有权限访问该目录！！"));
         return -2;
     }
+    intptr_t  hfind = 0;
     _finddata_t fdata;
-    int hfind = 0;
     if ((hfind = _findfirst("*", &fdata)) == -1)
     {
         OutputDebugString(_T("没有找到任何文件"));
+        FILEINFO finfo;
+        finfo.HasNext = FALSE;
+        CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
+        CServerSocket::getInstance()->Send(pack);
         return -3;
     }
     do
@@ -108,12 +97,11 @@ int MakeDirectoryInfo()
         FILEINFO finfo;
         finfo.IsDirectory = (fdata.attrib & _A_SUBDIR) != 0;
         memcpy(finfo.szFileName, fdata.name, strlen(fdata.name));
-        //lstFileInfos.push_back(finfo);
         CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
         CServerSocket::getInstance()->Send(pack);
-    } while (!_findnext64i32(hfind, &fdata));
+    } while (!(_findnext(hfind, &fdata)));
     //发送信息到控制端
-    FILEINFO finfo;
+    FILEINFO finfo; 
     finfo.HasNext = FALSE;
     CPacket pack(2, (BYTE*)&finfo, sizeof(finfo));
     CServerSocket::getInstance()->Send(pack);
@@ -315,7 +303,7 @@ unsigned _stdcall threadLockDlg(void* ary)
     rect.top = 0;
     rect.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
     TRACE("rect.bottom : %d", rect.bottom);
-    rect.bottom += 89;
+    rect.bottom += LONG(89);
     dlg.MoveWindow(rect);
     //窗口置顶
     dlg.SetWindowPos(&dlg.wndTopMost, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
@@ -432,7 +420,7 @@ int main()
         else
         {
             //1.套接字环境初始化
-            CServerSocket*pserver =  CServerSocket::getInstance();
+            CServerSocket *pserver =  CServerSocket::getInstance();
             int count = 0;          
             if (pserver->InitSocket() == false)
             {

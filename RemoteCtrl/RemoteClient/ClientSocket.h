@@ -151,6 +151,20 @@ typedef struct MouseEvent
 
 }MOUSEEV, * PMOUSEEV;
 
+typedef struct file_info
+{
+	file_info()
+	{
+		IsInvalid = FALSE;
+		IsDirectory = -1;
+		HasNext = TRUE;
+		memset(szFileName, 0, sizeof(szFileName));
+	}
+	BOOL IsInvalid;//是否有效
+	BOOL IsDirectory;//是否目录为0 否  1 -是
+	BOOL HasNext;
+	char szFileName[256];
+}FILEINFO, * PFILEINFO;
 
 std::string GetErrInfo(int wsaErrCode);
 
@@ -179,13 +193,14 @@ public:
 		serv_adr.sin_port = htons(nPort);
 		if (serv_adr.sin_addr.s_addr == INADDR_NONE)
 		{
-			AfxMessageBox("指定的ip地址不存在！");
+			AfxMessageBox(_T("指定的ip地址不存在！"));
 			return false;
 		}		
 		int ret = connect(m_socket, (sockaddr*)&serv_adr, sizeof(serv_adr));
 		if (ret == -1)
 		{
-			AfxMessageBox("连接失败");
+			
+			AfxMessageBox(_T("连接失败"));
 			TRACE("连接失败，%d %s\r\n", WSAGetLastError(), GetErrInfo(WSAGetLastError()).c_str());
 			return false;
 		}
